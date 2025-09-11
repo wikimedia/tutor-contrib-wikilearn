@@ -2,8 +2,10 @@ import os
 from glob import glob
 
 import click
+import subprocess
 import importlib_resources
 from tutor import hooks
+from tutor import plugins
 
 from .__about__ import __version__
 
@@ -127,7 +129,7 @@ hooks.Filters.IMAGES_PUSH.add_items(
 hooks.Filters.ENV_TEMPLATE_ROOTS.add_items(
     # Root paths for template files, relative to the project root.
     [
-        str(importlib_resources.files("wikilearn") / "templates"),
+        str(importlib_resources.files("tutorwikilearn") / "templates"),
     ]
 )
 
@@ -152,7 +154,7 @@ hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
 
 # For each file in wikilearn/patches,
 # apply a patch based on the file's name and contents.
-for path in glob(str(importlib_resources.files("wikilearn") / "patches" / "*")):
+for path in glob(str(importlib_resources.files("tutorwikilearn") / "patches" / "*")):
     with open(path, encoding="utf-8") as patch_file:
         hooks.Filters.ENV_PATCHES.add_item((os.path.basename(path), patch_file.read()))
 
@@ -201,24 +203,37 @@ for path in glob(str(importlib_resources.files("wikilearn") / "patches" / "*")):
 # group and then add it to CLI_COMMANDS:
 
 
-### @click.group()
-### def wikilearn() -> None:
-###     pass
+@click.group()
+def wikilearn() -> None:
+    """WikiLearn plugin commands."""
+    pass
 
 
-### hooks.Filters.CLI_COMMANDS.add_item(wikilearn)
+hooks.Filters.CLI_COMMANDS.add_item(wikilearn)
 
 
-# Then, you would add subcommands directly to the Click group, for example:
+@wikilearn.command()
+def enable() -> None:
+    """Enable all required plugins for WikiLearn."""
+    try:
+        click.echo("Enabling WikiLearn required plugins...")
 
+        result = subprocess.run(
+            "tutor plugins enable mfe indigo notes forum discovery credentials",
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
 
-### @wikilearn.command()
-### def example_command() -> None:
-###     """
-###     This is helptext for an example command.
-###     """
-###     print("You've run an example command.")
+        click.echo("✓ Successfully enabled all plugins")
+        if result.stdout:
+            click.echo(f"Output: {result.stdout}")
 
+    except subprocess.CalledProcessError as e:
+        click.echo(f"✗ Command failed: {e.stderr}", err=True)
+    except Exception as e:
+        click.echo(f"✗ Unexpected error: {str(e)}", err=True)
 
-# This would allow you to run:
-#   $ tutor wikilearn example-command
+    click.echo("\nAll plugins have been processed.")
+    click.echo("Run 'tutor plugins list' to verify the enabled plugins.")
