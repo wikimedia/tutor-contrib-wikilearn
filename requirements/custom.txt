@@ -1,0 +1,1 @@
+tutor-indigo-wikilearn@git+https://github.com/wikimedia/tutor-indigo-wikilearn@develop#egg=tutor-indigo-wikilearn
