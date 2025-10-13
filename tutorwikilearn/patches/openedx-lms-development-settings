@@ -1,0 +1,3 @@
+{% if get_mfe("messenger") %}
+MESSENGER_MICROFRONTEND_URL = "http://{{ MFE_HOST }}:{{ get_mfe("messenger")["port"] }}/messenger/"
+{% endif %}
