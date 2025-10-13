@@ -39,21 +39,21 @@ hooks.Filters.CONFIG_UNIQUE.add_items(
 
 hooks.Filters.CONFIG_OVERRIDES.add_items(
     [
-        # add any configuration overrides here
+        # Override any default setting values here.
     ]
 )
 
 
 hooks.Filters.ENV_PATCHES.add_items(
     [
-        (
-            f"mfe-dockerfile-post-npm-install-discussions",
-            """
-RUN npm install git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/edly-io/frontend-plugins-wikilearn.git
+#         (
+#             f"mfe-dockerfile-post-npm-install-discussions",
+#             """
+# RUN npm install git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/edly-io/frontend-plugins-wikilearn.git
 
 
-""",
-        ),
+# """,
+#         ),
         (
             f"mfe-env-config-runtime-definitions-discussions",
             """
@@ -62,7 +62,6 @@ RUN npm install git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/edly-io/fro
         ),
     ]
 )
-
 
 
 PLUGIN_SLOTS.add_items([

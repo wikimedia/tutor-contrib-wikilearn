@@ -1,2 +1,2 @@
-# RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
-#    pip install PATH_TO_WIKILEARN_DJANGO_APP
+RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
+    pip install --upgrade git+https://github.com/wikimedia/openedx-wikilearn-features.git@$master#egg=openedx-wikilearn-features
