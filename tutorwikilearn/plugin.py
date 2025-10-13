@@ -241,7 +241,7 @@ def enable() -> None:
 
 
 @MFE_APPS.add()
-def _add_my_mfe(mfes):
+def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["messenger"] = {
         "repository": "https://github.com/eemaanamir/frontend-app-messenger.git",
         "port": 2010,
