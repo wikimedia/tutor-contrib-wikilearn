@@ -6,6 +6,7 @@ import subprocess
 import importlib_resources
 from tutor import hooks
 from tutor import plugins
+from tutormfe.hooks import MFE_APPS
 
 from .__about__ import __version__
 
@@ -37,6 +38,11 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
     [
         # Override any default setting values here.
     ]
+)
+
+
+hooks.Filters.MOUNTED_DIRECTORIES.add_item(
+    ("openedx", "openedx-wikilearn-features")
 )
 
 
@@ -237,3 +243,13 @@ def enable() -> None:
 
     click.echo("\nAll plugins have been processed.")
     click.echo("Run 'tutor plugins list' to verify the enabled plugins.")
+
+
+@MFE_APPS.add()
+def _add_my_mfe(mfes):
+    mfes["messenger"] = {
+        "repository": "https://github.com/eemaanamir/frontend-app-messenger.git",
+        "port": 2010,
+        "version": "develop",
+    }
+    return mfes
