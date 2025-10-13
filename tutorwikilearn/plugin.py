@@ -41,11 +41,6 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
 )
 
 
-hooks.Filters.MOUNTED_DIRECTORIES.add_item(
-    ("openedx", "openedx-wikilearn-features")
-)
-
-
 ########################################
 # INITIALIZATION TASKS
 ########################################
