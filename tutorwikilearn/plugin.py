@@ -8,7 +8,10 @@ from tutor import hooks
 from tutor import plugins
 from tutormfe.hooks import MFE_APPS
 
+from tutormfe.hooks import PLUGIN_SLOTS
+
 from .__about__ import __version__
+
 
 ########################################
 # CONFIGURATION
@@ -39,6 +42,44 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
         # Override any default setting values here.
     ]
 )
+
+
+hooks.Filters.ENV_PATCHES.add_items(
+    [
+#         (
+#             f"mfe-dockerfile-post-npm-install-discussions",
+#             """
+# RUN npm install git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/edly-io/frontend-plugins-wikilearn.git
+
+
+# """,
+#         ),
+        (
+            f"mfe-env-config-runtime-definitions-discussions",
+            """
+    const { UsernameMention } = require('frontend-plugins-wikilearn');
+""",
+        ),
+    ]
+)
+
+
+PLUGIN_SLOTS.add_items([
+    (
+        "discussions",
+        "org.openedx.frontend.discussions.user_mention_plugin.v1",
+        """
+        {
+          op: PLUGIN_OPERATIONS.Insert,
+          widget: {
+            id: 'user_mention_plugin',
+            type: DIRECT_PLUGIN,
+            priority: 10,
+            RenderWidget: UsernameMention,
+          },
+        }"""
+    )
+])
 
 
 ########################################
