@@ -46,14 +46,14 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
 
 hooks.Filters.ENV_PATCHES.add_items(
     [
-#         (
-#             f"mfe-dockerfile-post-npm-install-discussions",
-#             """
-# RUN npm install git+https://${GITHUB_TOKEN}:x-oauth-basic@github.com/edly-io/frontend-plugins-wikilearn.git
-
-
-# """,
-#         ),
+        (
+            f"mfe-dockerfile-post-npm-install-discussions",
+            """
+# Install the package using GitHub PAT
+ARG GITHUB_TOKEN
+RUN npm install git+https://${GITHUB_TOKEN}@github.com/edly-io/frontend-plugins-wikilearn.git
+""",
+        ),
         (
             f"mfe-env-config-runtime-definitions-discussions",
             """
