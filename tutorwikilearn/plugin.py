@@ -49,9 +49,7 @@ hooks.Filters.ENV_PATCHES.add_items(
         (
             f"mfe-dockerfile-post-npm-install-discussions",
             """
-# Install the package using GitHub PAT
-ARG GITHUB_TOKEN
-RUN npm install git+https://${GITHUB_TOKEN}@github.com/edly-io/frontend-plugins-wikilearn.git
+RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git
 """,
         ),
         (
