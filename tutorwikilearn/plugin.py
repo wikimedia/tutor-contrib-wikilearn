@@ -26,23 +26,17 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
     ]
 )
 
-hooks.Filters.CONFIG_UNIQUE.add_items(
-    [
-        # Add settings that don't have a reasonable default for all users here.
-        # For instance: passwords, secret keys, etc.
-        # Each new setting is a pair: (setting_name, unique_generated_value).
-        # Prefix your setting names with 'WIKILEARN_'.
-        # For example:
-        ### ("WIKILEARN_SECRET_KEY", "{{ 24|random_string }}"),
-    ]
-)
-
 hooks.Filters.CONFIG_OVERRIDES.add_items(
     [
         # Override any default setting values here.
+        ("EDX_PLATFORM_REPOSITORY", "https://github.com/wikimedia/edx-platform.git"),
+        ("EDX_PLATFORM_VERSION", "develop-teak"),
     ]
 )
 
+hooks.Filters.ENV_PATTERNS_IGNORE.add_items([
+    r"(.*/)?ace_common/edx_ace/common/base_body.html(/.*)?"
+])
 
 hooks.Filters.ENV_PATCHES.add_items(
     [
@@ -79,85 +73,6 @@ PLUGIN_SLOTS.add_items([
     )
 ])
 
-
-########################################
-# INITIALIZATION TASKS
-########################################
-
-# To add a custom initialization task, create a bash script template under:
-# wikilearn/templates/wikilearn/tasks/
-# and then add it to the MY_INIT_TASKS list. Each task is in the format:
-# ("<service>", ("<path>", "<to>", "<script>", "<template>"))
-MY_INIT_TASKS: list[tuple[str, tuple[str, ...]]] = [
-    # For example, to add LMS initialization steps, you could add the script template at:
-    # wikilearn/templates/wikilearn/tasks/lms/init.sh
-    # And then add the line:
-    ### ("lms", ("wikilearn", "tasks", "lms", "init.sh")),
-]
-
-
-# For each task added to MY_INIT_TASKS, we load the task template
-# and add it to the CLI_DO_INIT_TASKS filter, which tells Tutor to
-# run it as part of the `init` job.
-for service, template_path in MY_INIT_TASKS:
-    full_path: str = str(
-        importlib_resources.files("wikilearn")
-        / os.path.join("templates", *template_path)
-    )
-    with open(full_path, encoding="utf-8") as init_task_file:
-        init_task: str = init_task_file.read()
-    hooks.Filters.CLI_DO_INIT_TASKS.add_item((service, init_task))
-
-
-########################################
-# DOCKER IMAGE MANAGEMENT
-########################################
-
-
-# Images to be built by `tutor images build`.
-# Each item is a quadruple in the form:
-#     ("<tutor_image_name>", ("path", "to", "build", "dir"), "<docker_image_tag>", "<build_args>")
-hooks.Filters.IMAGES_BUILD.add_items(
-    [
-        # To build `myimage` with `tutor images build myimage`,
-        # you would add a Dockerfile to templates/wikilearn/build/myimage,
-        # and then write:
-        ### (
-        ###     "myimage",
-        ###     ("plugins", "wikilearn", "build", "myimage"),
-        ###     "docker.io/myimage:{{ WIKILEARN_VERSION }}",
-        ###     (),
-        ### ),
-    ]
-)
-
-
-# Images to be pulled as part of `tutor images pull`.
-# Each item is a pair in the form:
-#     ("<tutor_image_name>", "<docker_image_tag>")
-hooks.Filters.IMAGES_PULL.add_items(
-    [
-        # To pull `myimage` with `tutor images pull myimage`, you would write:
-        ### (
-        ###     "myimage",
-        ###     "docker.io/myimage:{{ WIKILEARN_VERSION }}",
-        ### ),
-    ]
-)
-
-
-# Images to be pushed as part of `tutor images push`.
-# Each item is a pair in the form:
-#     ("<tutor_image_name>", "<docker_image_tag>")
-hooks.Filters.IMAGES_PUSH.add_items(
-    [
-        # To push `myimage` with `tutor images push myimage`, you would write:
-        ### (
-        ###     "myimage",
-        ###     "docker.io/myimage:{{ WIKILEARN_VERSION }}",
-        ### ),
-    ]
-)
 
 
 ########################################
@@ -198,37 +113,6 @@ for path in glob(str(importlib_resources.files("tutorwikilearn") / "patches" / "
     with open(path, encoding="utf-8") as patch_file:
         hooks.Filters.ENV_PATCHES.add_item((os.path.basename(path), patch_file.read()))
 
-
-########################################
-# CUSTOM JOBS (a.k.a. "do-commands")
-########################################
-
-# A job is a set of tasks, each of which run inside a certain container.
-# Jobs are invoked using the `do` command, for example: `tutor local do importdemocourse`.
-# A few jobs are built in to Tutor, such as `init` and `createuser`.
-# You can also add your own custom jobs:
-
-
-# To add a custom job, define a Click command that returns a list of tasks,
-# where each task is a pair in the form ("<service>", "<shell_command>").
-# For example:
-### @click.command()
-### @click.option("-n", "--name", default="plugin developer")
-### def say_hi(name: str) -> list[tuple[str, str]]:
-###     """
-###     An example job that just prints 'hello' from within both LMS and CMS.
-###     """
-###     return [
-###         ("lms", f"echo 'Hello from LMS, {name}!'"),
-###         ("cms", f"echo 'Hello from CMS, {name}!'"),
-###     ]
-
-
-# Then, add the command function to CLI_DO_COMMANDS:
-## hooks.Filters.CLI_DO_COMMANDS.add_item(say_hi)
-
-# Now, you can run your job like this:
-#   $ tutor local do say-hi --name="Ahmed Khalid"
 
 
 #######################################
@@ -282,8 +166,17 @@ def enable() -> None:
 @MFE_APPS.add()
 def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["messenger"] = {
-        "repository": "https://github.com/eemaanamir/frontend-app-messenger.git",
+        "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
         "port": 2010,
         "version": "develop",
+    }
+    return mfes
+
+@MFE_APPS.add()
+def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
+    mfes["discussions"] = {
+        "repository": "https://github.com/edly-io/frontend-app-discussions.git",
+        "port": 2002,
+        "version": "develop-teak-wikilearn",
     }
     return mfes
