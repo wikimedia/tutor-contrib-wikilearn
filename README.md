@@ -9,7 +9,9 @@ WikiLearn plugin for Tutor. If you want to set up WikiLearn, this is the first t
 ```bash
 git clone https://github.com/wikimedia/tutor-contrib-wikilearn.git
 cd tutor-contrib-wikilearn/
-pip install -e '.[dev]'
+pip install -e .
+pip install -e git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@develop#egg=tutor-indigo-wikilearn
+
 ```
 
 Installing this will also install the following dependencies:

@@ -1,2 +1,2 @@
 RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
-    pip install --upgrade git+https://github.com/wikimedia/openedx-wikilearn-features.git@master#egg=openedx-wikilearn-features
+    pip install --upgrade git+https://github.com/wikimedia/openedx-wikilearn-features.git@{{ WIKILEARN_OPENEDX_WIKILEARN_FEATURES_VERSION }}#egg=openedx-wikilearn-features

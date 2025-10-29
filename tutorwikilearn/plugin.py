@@ -23,6 +23,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'WIKILEARN_'.
         ("WIKILEARN_VERSION", __version__),
+        ("WIKILEARN_OPENEDX_WIKILEARN_FEATURES_VERSION", os.getenv("WIKILEARN_OPENEDX_WIKILEARN_FEATURES_VERSION")),
     ]
 )
 
@@ -30,7 +31,7 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
     [
         # Override any default setting values here.
         ("EDX_PLATFORM_REPOSITORY", "https://github.com/wikimedia/edx-platform.git"),
-        ("EDX_PLATFORM_VERSION", "develop-teak"),
+        ("EDX_PLATFORM_VERSION", os.getenv("WIKILEARN_EDX_PLATFORM_VERSION")),
     ]
 )
 
@@ -38,12 +39,14 @@ hooks.Filters.ENV_PATTERNS_IGNORE.add_items([
     r"(.*/)?ace_common/edx_ace/common/base_body.html(/.*)?"
 ])
 
+FRONTEND_PLUGINS_WIKILEARN_VERSION = os.getenv("WIKIMEDIA_FRONTEND_PLUGINS_WIKILEARN_VERSION", "master")
+
 hooks.Filters.ENV_PATCHES.add_items(
     [
         (
             f"mfe-dockerfile-post-npm-install-discussions",
             """
-RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git
+RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git#{FRONTEND_PLUGINS_WIKILEARN_VERSION}
 """,
         ),
         (
@@ -168,12 +171,12 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["messenger"] = {
         "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
         "port": 2010,
-        "version": "develop",
+        "version": os.getenv("FRONTEND_APP_MESSENGER_WIKILEARN_VERSION"),
     }
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
-        "version": "develop-teak-wikilearn",
+        "version": os.getenv("FRONTEND_APP_DISCUSSIONS_WIKILEARN_VERSION"),
     }
     mfes.pop("authn")
     return mfes
