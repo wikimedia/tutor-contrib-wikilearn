@@ -10,7 +10,13 @@ from tutormfe.hooks import MFE_APPS
 from tutormfe.hooks import PLUGIN_SLOTS
 
 from .__about__ import __version__
-from constants import *
+from .constants import (
+    WIKILEARN_DISCUSSIONS_MFE_VERSION,
+    WIKILEARN_EDX_FEATURES_VERSION,
+    WIKILEARN_EDX_PLATFORM_VERSION,
+    WIKILEARN_FRONTEND_PLUGINS_VERSION,
+    WIKILEARN_MESSENGER_MFE_VERSION,
+)
 
 
 ########################################
@@ -42,13 +48,13 @@ hooks.Filters.ENV_PATTERNS_IGNORE.add_items([
 hooks.Filters.ENV_PATCHES.add_items(
     [
         (
-            f"mfe-dockerfile-post-npm-install-discussions",
-            """
+            "mfe-dockerfile-post-npm-install-discussions",
+            f"""
 RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git#{WIKILEARN_FRONTEND_PLUGINS_VERSION}
 """,
         ),
         (
-            f"mfe-env-config-runtime-definitions-discussions",
+            "mfe-env-config-runtime-definitions-discussions",
             """
     const { UsernameMention } = require('frontend-plugins-wikilearn');
 """,
