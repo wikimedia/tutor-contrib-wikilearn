@@ -1,6 +1,9 @@
 name: Deploy
 
 on:
+  push:
+    branches:
+      - eemaan/refactor-plugin-setup
   schedule:
     # Run at 7am every day
     # - cron:  '0 7 * * *'
