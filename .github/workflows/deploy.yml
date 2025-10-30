@@ -4,18 +4,13 @@ on:
   push:
     branches:
       - eemaan/refactor-plugin-setup
-  schedule:
-    # Run at 7am every day
-    # - cron:  '0 7 * * *'
-    # Run at 2am every Monday
-    - cron: "0 2 * * 1"
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      SSH: ssh -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=150 -i ~/.ssh/wikilearn_rsa ubuntu@192.168.197.58
+      SSH: ssh -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=150 -i ~/.ssh/wikilearn_rsa -o ProxyCommand='ssh -i ~/.ssh/wikilearn_rsa -o StrictHostKeyChecking=no -W %h:%p ubuntu@54.237.140.154' ubuntu@192.168.197.58
       WIKILEARN_BRANCH: eemaan/refactor-plugin-setup
       INDIGO_WIKILEARN_BRANCH: develop
       LMS_HOST: dev.learn.wiki
