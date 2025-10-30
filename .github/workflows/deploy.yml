@@ -15,7 +15,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      SSH: ssh -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=150 -i ~/.ssh/demo.key ubuntu@teak.demo.edly.io
+      SSH: ssh -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=150 -i ~/.ssh/wikilearn_rsa ubuntu@192.168.197.58
       WIKILEARN_BRANCH: eemaan/refactor-plugin-setup
       INDIGO_WIKILEARN_BRANCH: develop
       LMS_HOST: dev.learn.wiki
