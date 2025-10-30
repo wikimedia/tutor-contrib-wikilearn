@@ -1,16 +1,18 @@
 import os
+from dotenv import load_dotenv
 from glob import glob
 
 import click
 import subprocess
 import importlib_resources
 from tutor import hooks
-from tutor import plugins
 from tutormfe.hooks import MFE_APPS
 
 from tutormfe.hooks import PLUGIN_SLOTS
 
 from .__about__ import __version__
+
+load_dotenv()
 
 
 ########################################
