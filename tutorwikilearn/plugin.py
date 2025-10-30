@@ -23,7 +23,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'WIKILEARN_'.
         ("WIKILEARN_VERSION", __version__),
-        ("WIKILEARN_DJANGO_APP_VERSION", os.getenv("WIKILEARN_DJANGO_APP_VERSION")),
+        ("WIKILEARN_EDX_FEATURES_VERSION", os.getenv("WIKILEARN_EDX_FEATURES_VERSION")),
     ]
 )
 
@@ -39,7 +39,7 @@ hooks.Filters.ENV_PATTERNS_IGNORE.add_items([
     r"(.*/)?ace_common/edx_ace/common/base_body.html(/.*)?"
 ])
 
-FRONTEND_PLUGINS_WIKILEARN_VERSION = os.getenv("WIKIMEDIA_FRONTEND_PLUGINS_WIKILEARN_VERSION", "master")
+FRONTEND_PLUGINS_WIKILEARN_VERSION = os.getenv("WIKILEARN_FRONTEND_PLUGINS_VERSION", "master")
 
 hooks.Filters.ENV_PATCHES.add_items(
     [
@@ -171,12 +171,12 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["messenger"] = {
         "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
         "port": 2010,
-        "version": os.getenv("FRONTEND_APP_MESSENGER_WIKILEARN_VERSION"),
+        "version": os.getenv("WIKILEARN_MESSENGER_MFE_VERSION"),
     }
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
-        "version": os.getenv("FRONTEND_APP_DISCUSSIONS_WIKILEARN_VERSION"),
+        "version": os.getenv("WIKILEARN_DISCUSSIONS_MFE_VERSION"),
     }
     mfes.pop("authn")
     return mfes
