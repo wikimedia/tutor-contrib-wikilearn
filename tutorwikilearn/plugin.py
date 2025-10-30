@@ -23,7 +23,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'WIKILEARN_'.
         ("WIKILEARN_VERSION", __version__),
-        ("WIKILEARN_OPENEDX_WIKILEARN_FEATURES_VERSION", os.getenv("WIKILEARN_OPENEDX_WIKILEARN_FEATURES_VERSION")),
+        ("WIKILEARN_DJANGO_APP_VERSION", os.getenv("WIKILEARN_DJANGO_APP_VERSION")),
     ]
 )
 
