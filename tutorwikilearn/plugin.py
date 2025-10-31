@@ -170,21 +170,10 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
         "port": 2010,
         "version": "develop",
     }
-    return mfes
-
-@MFE_APPS.add()
-def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
         "version": "develop-teak-wikilearn",
     }
-    return mfes
-
-# Disable the AUTHN MFE (authentication micro-frontend) for WikiLearn.
-# WikiLearn uses its own custom login and registration,
-# so the default Open edX authn MFE is not required.
-@MFE_APPS.add()
-def _remove_some_my_mfe(mfes):
     mfes.pop("authn")
     return mfes
