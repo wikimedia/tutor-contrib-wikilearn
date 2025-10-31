@@ -170,13 +170,10 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
         "port": 2010,
         "version": "develop",
     }
-    return mfes
-
-@MFE_APPS.add()
-def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
         "version": "develop-teak-wikilearn",
     }
+    mfes.pop("authn")
     return mfes
