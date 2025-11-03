@@ -2,8 +2,6 @@ FEATURES['ALLOW_PUBLIC_ACCOUNT_CREATION'] = True
 FEATURES['ENABLE_THIRD_PARTY_AUTH'] = True
 ENABLE_REQUIRE_THIRD_PARTY_AUTH = True
 
-AUTHENTICATION_BACKENDS += ["openedx_wikilearn_features.auth_backend.WikimediaIdentityServer"]
-
 {% if get_mfe("messenger") %}
 MESSENGER_MICROFRONTEND_URL = "{% if ENABLE_HTTPS %}https://{% else %}http://{% endif %}{{ MFE_HOST }}/messenger/"
 {% endif %}
