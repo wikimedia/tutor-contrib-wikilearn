@@ -1,9 +1,6 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - eemaan/refactor-plugin-setup
   workflow_dispatch:
 
 jobs:

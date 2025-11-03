@@ -150,7 +150,7 @@ def enable() -> None:
         click.echo("Enabling WikiLearn required plugins...")
 
         result = subprocess.run(
-            "tutor plugins enable mfe indigo notes forum aspects",
+            "tutor plugins enable mfe indigo notes forum",
             shell=True,
             capture_output=True,
             text=True,
