@@ -5,12 +5,18 @@ import click
 import subprocess
 import importlib_resources
 from tutor import hooks
-from tutor import plugins
 from tutormfe.hooks import MFE_APPS
 
 from tutormfe.hooks import PLUGIN_SLOTS
 
 from .__about__ import __version__
+from .constants import (
+    WIKILEARN_DISCUSSIONS_MFE_VERSION,
+    WIKILEARN_EDX_FEATURES_VERSION,
+    WIKILEARN_EDX_PLATFORM_VERSION,
+    WIKILEARN_FRONTEND_PLUGINS_VERSION,
+    WIKILEARN_MESSENGER_MFE_VERSION,
+)
 
 
 ########################################
@@ -23,6 +29,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'WIKILEARN_'.
         ("WIKILEARN_VERSION", __version__),
+        ("WIKILEARN_EDX_FEATURES_VERSION", WIKILEARN_EDX_FEATURES_VERSION),
     ]
 )
 
@@ -30,7 +37,7 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
     [
         # Override any default setting values here.
         ("EDX_PLATFORM_REPOSITORY", "https://github.com/wikimedia/edx-platform.git"),
-        ("EDX_PLATFORM_VERSION", "develop-teak"),
+        ("EDX_PLATFORM_VERSION", WIKILEARN_EDX_PLATFORM_VERSION),
     ]
 )
 
@@ -41,13 +48,13 @@ hooks.Filters.ENV_PATTERNS_IGNORE.add_items([
 hooks.Filters.ENV_PATCHES.add_items(
     [
         (
-            f"mfe-dockerfile-post-npm-install-discussions",
-            """
-RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git
+            "mfe-dockerfile-post-npm-install-discussions",
+            f"""
+RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git#{WIKILEARN_FRONTEND_PLUGINS_VERSION}
 """,
         ),
         (
-            f"mfe-env-config-runtime-definitions-discussions",
+            "mfe-env-config-runtime-definitions-discussions",
             """
     const { UsernameMention } = require('frontend-plugins-wikilearn');
 """,
@@ -143,7 +150,7 @@ def enable() -> None:
         click.echo("Enabling WikiLearn required plugins...")
 
         result = subprocess.run(
-            "tutor plugins enable mfe indigo notes forum aspects",
+            "tutor plugins enable mfe indigo notes forum",
             shell=True,
             capture_output=True,
             text=True,
@@ -168,12 +175,12 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     mfes["messenger"] = {
         "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
         "port": 2010,
-        "version": "develop",
+        "version": WIKILEARN_MESSENGER_MFE_VERSION,
     }
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
-        "version": "develop-teak-wikilearn",
+        "version": WIKILEARN_DISCUSSIONS_MFE_VERSION,
     }
     mfes.pop("authn")
     return mfes

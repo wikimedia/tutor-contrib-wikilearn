@@ -23,7 +23,6 @@ class MetaDataHook(MetadataHookInterface):
         metadata["version"] = about["__version__"]
         metadata["dependencies"] = load_requirements("base.in")
         metadata["optional-dependencies"] = {
-            "dev": load_requirements("dev.in") + load_requirements("custom.txt"),
             "release": get_latest_release_for_custom_dependencies(),
         }
 
