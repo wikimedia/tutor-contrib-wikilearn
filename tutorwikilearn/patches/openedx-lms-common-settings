@@ -1,1 +1,2 @@
 AUTHENTICATION_BACKENDS += ["openedx_wikilearn_features.auth_backend.WikimediaIdentityServer"]
+FEATURES['ENABLE_UNICODE_USERNAME'] = True
