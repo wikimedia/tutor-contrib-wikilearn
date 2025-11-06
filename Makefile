@@ -1,16 +1,10 @@
 .DEFAULT_GOAL := help
 .PHONY: docs
-
 SRC_DIRS = ./tutorwikilearn
 BLACK_OPTS = --exclude templates ${SRC_DIRS}
 
 # Default branch variables (can be overridden)
 INDIGO_WIKILEARN_BRANCH ?= develop
-
-# Optional variables (can be passed at runtime)
-LMS_HOST ?=
-PLATFORM_NAME ?=
-ENABLE_HTTPS ?=
 
 
 # === Static checks ===
@@ -51,58 +45,83 @@ setup: ## Configure and enable Tutor plugins (wikilearn, mfe, indigo, etc.)
 	tutor plugins enable wikilearn
 	tutor plugins enable mfe indigo notes forum notifications
 
-	@if [ -n "$(LMS_HOST)" ] && [ -n "$(PLATFORM_NAME)" ]; then \
-		echo "Saving Tutor configuration..."; \
-		tutor config save \
-			--set LMS_HOST=$(LMS_HOST) \
-			--set CMS_HOST=studio.$(LMS_HOST) \
-			--set PLATFORM_NAME="$(PLATFORM_NAME)" \
-			$(if $(ENABLE_HTTPS),--set ENABLE_HTTPS=$(ENABLE_HTTPS)); \
-	else \
-		echo "Skipping tutor config save (LMS_HOST or PLATFORM_NAME not provided)"; \
-	fi
-
-	@echo "Building Tutor images..."
-	tutor images build all
-
 
 # === Developer convenience ===
-clone: ## Clone all Wikilearn dependencies in parent directory (developer use only)
-	@echo "Cloning required Wikilearn repositories one level above current directory..."
+clone-frontend-plugins: ## Clone frontend-plugins-wikilearn and install in editable mode
+	@echo "Cloning frontend-plugins-wikilearn..."
 	cd .. && \
 	{ \
-		echo "Cloning frontend-plugins-wikilearn and installing in editable mode..."; \
 		git clone "https://github.com/wikimedia/frontend-plugins-wikilearn.git" || true; \
+		echo "Installing frontend-plugins-wikilearn in editable mode..."; \
 		pip install -e frontend-plugins-wikilearn; \
-		\
-		echo "Cloning tutor-indigo-wikilearn (develop) and installing in editable mode..."; \
-		git clone -b develop "https://github.com/wikimedia/tutor-indigo-wikilearn.git" || true; \
-		pip install -e tutor-indigo-wikilearn; \
-		\
-		echo "Cloning edx-platform..."; \
-		git clone -b $$(python -c 'import tutorwikilearn.constants as c; print(c.WIKILEARN_EDX_PLATFORM_VERSION)') "https://github.com/wikimedia/edx-platform.git" || true; \
-		tutor mounts add openedx ../edx-platform; \
-		\
-		echo "Cloning frontend-app-messenger..."; \
-		git clone -b $$(python -c 'import tutorwikilearn.constants as c; print(c.WIKILEARN_MESSENGER_MFE_VERSION)') "https://github.com/wikimedia/frontend-app-messenger.git" || true; \
-		tutor mounts add messenger ../frontend-app-messenger; \
-		\
-		echo "Cloning frontend-app-discussions..."; \
-		git clone -b $$(python -c 'import tutorwikilearn.constants as c; print(c.WIKILEARN_DISCUSSIONS_MFE_VERSION)') "https://github.com/edly-io/frontend-app-discussions.git" || true; \
-		tutor mounts add discussions ../frontend-app-discussions; \
-		\
-		echo "Cloning openedx-wikilearn-features..."; \
-		git clone -b $$(python -c 'import tutorwikilearn.constants as c; print(c.WIKILEARN_EDX_FEATURES_VERSION)') "https://github.com/wikimedia/openedx-wikilearn-features.git" || true; \
-		tutor mounts add openedx ../openedx-wikilearn-features; \
 	}
 
-	@echo "Ensuring tutorwikilearn/plugin.py includes mount for openedx-wikilearn-features..."
-	@if ! grep -q "hooks.Filters.MOUNTED_DIRECTORIES.add_item((\"openedx\", \"openedx-wikilearn-features\"))" tutorwikilearn/plugin.py; then \
-		echo "Adding Tutor mount line to plugin.py..."; \
-		echo '\nhooks.Filters.MOUNTED_DIRECTORIES.add_item(("openedx", "openedx-wikilearn-features"))' >> tutorwikilearn/plugin.py; \
-	else \
-		echo "Mount line already present in plugin.py, skipping."; \
-	fi
+clone-indigo: ## Clone tutor-indigo-wikilearn and install in editable mode
+	@echo "Cloning tutor-indigo-wikilearn..."
+	cd .. && \
+	{ \
+		BRANCH="${INDIGO_WIKILEARN_BRANCH}"; \
+		echo "Checking out branch: $$BRANCH"; \
+		git clone -b $$BRANCH "https://github.com/wikimedia/tutor-indigo-wikilearn.git" || true; \
+		echo "Installing tutor-indigo-wikilearn in editable mode..."; \
+		pip install -e tutor-indigo-wikilearn; \
+	}
+
+clone-edx-platform: ## Clone edx-platform and mount it
+	@echo "Cloning edx-platform..."
+	cd .. && \
+	{ \
+		BRANCH=$$(python -c '\
+import tutorwikilearn.constants as c; \
+print(c.WIKILEARN_EDX_PLATFORM_VERSION)' ); \
+		echo "Checking out branch: $$BRANCH"; \
+		git clone -b $$BRANCH "https://github.com/wikimedia/edx-platform.git" || true; \
+		echo "Mounting edx-platform to Tutor..."; \
+		tutor mounts add openedx ../edx-platform || true; \
+	}
+
+clone-messenger: ## Clone frontend-app-messenger and mount it
+	@echo "Cloning frontend-app-messenger..."
+	cd .. && \
+	{ \
+		BRANCH=$$(python -c '\
+import tutorwikilearn.constants as c; \
+print(c.WIKILEARN_MESSENGER_MFE_VERSION)' ); \
+		echo "Checking out branch: $$BRANCH"; \
+		git clone -b $$BRANCH "https://github.com/wikimedia/frontend-app-messenger.git" || true; \
+		echo "Mounting messenger MFE to Tutor..."; \
+		tutor mounts add messenger ../frontend-app-messenger || true; \
+	}
+
+clone-discussions: ## Clone frontend-app-discussions and mount it
+	@echo "Cloning frontend-app-discussions..."
+	cd .. && \
+	{ \
+		BRANCH=$$(python -c '\
+import tutorwikilearn.constants as c; \
+print(c.WIKILEARN_DISCUSSIONS_MFE_VERSION)' ); \
+		echo "Checking out branch: $$BRANCH"; \
+		git clone -b $$BRANCH "https://github.com/edly-io/frontend-app-discussions.git" || true; \
+		echo "Mounting discussions MFE to Tutor..."; \
+		tutor mounts add discussions ../frontend-app-discussions || true; \
+	}
+
+clone-features: ## Clone openedx-wikilearn-features and mount it
+	@echo "Cloning openedx-wikilearn-features..."
+	cd .. && \
+	{ \
+		BRANCH=$$(python -c '\
+import tutorwikilearn.constants as c; \
+print(c.WIKILEARN_EDX_FEATURES_VERSION)' ); \
+		echo "Checking out branch: $$BRANCH"; \
+		git clone -b $$BRANCH "https://github.com/wikimedia/openedx-wikilearn-features.git" || true; \
+		echo "Mounting openedx-wikilearn-features to Tutor..."; \
+		tutor mounts add openedx ../openedx-wikilearn-features || true; \
+	}
+
+clone-all: ## Clone all Wikilearn dependencies and mount them
+	@echo "Cloning all Wikilearn repositories and setting up mounts..."
+    clone-frontend-plugins clone-indigo clone-edx-platform clone-messenger clone-discussions clone-features
 
 
 # === Help ===
