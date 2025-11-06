@@ -73,6 +73,7 @@ make setup
 For Tutor to recognize the openedx-wikilearn-features mount locally, you’ll need to create and enable a small custom Tutor plugin and add the following line:
 
 ```python
+from tutor import hooks
 hooks.Filters.MOUNTED_DIRECTORIES.add_item(("openedx", "openedx-wikilearn-features"))
 ```
 You can follow the official Tutor plugin development tutorial here:
@@ -89,7 +90,7 @@ tutor dev launch
 Since the Wikilearn MFE image is large, developers can **reduce build time** by adding the following optimization to their custom plugin as described in the same [Tutor plugin guide](https://docs.tutor.edly.io/tutorials/plugin.html#plugin-development-tutorial).
 
 This helps skip unnecessary rebuilds during development.
-
+If you’re setting up multiple Tutor environments, you can export these [configuration parameters](https://docs.tutor.edly.io/tutorials/multiplatforms.html) in your shell to manage each Tutor instance’s root directories and configurations separately.
 
 ## License
 
