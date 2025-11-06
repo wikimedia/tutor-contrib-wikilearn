@@ -9,9 +9,7 @@ WikiLearn plugin for Tutor. If you want to set up WikiLearn, this is the first t
 ```bash
 git clone https://github.com/wikimedia/tutor-contrib-wikilearn.git
 cd tutor-contrib-wikilearn/
-pip install -e .
-pip install -e git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@develop#egg=tutor-indigo-wikilearn
-
+make install
 ```
 
 Installing this will also install the following dependencies:
@@ -20,26 +18,20 @@ Installing this will also install the following dependencies:
 - `tutor-mfe>=20.0.0,<21.0.0`
 - `tutor-forum>=20.0.0,<21.0.0`
 - `tutor-notes>=20.0.0,<21.0.0`
-- `tutor-contrib-aspects==2.4.0`
 
 Additionally, the following custom plugins will be installed from their develop branch:
 
 - `tutor-indigo-wikilearn@git+https://github.com/wikimedia/tutor-indigo-wikilearn@develop#egg=tutor-indigo-wikilearn`
+- `tutor-contrib-notifications@git+https://github.com/openedx/tutor-contrib-notifications.git@main#egg=tutor-contrib-notifications`
 
 **Note:** Installing in `[release]` mode will install all custom plugins from their latest release.
 
 ## Usage
 
-Enable the WikiLearn plugin:
+Enable the WikiLearn plugin and all its required plugins:
 
 ```bash
-tutor plugins enable wikilearn
-```
-
-Then enable all WikiLearn required plugins:
-
-```bash
-tutor wikilearn enable
+make setup
 ```
 
 ## License
