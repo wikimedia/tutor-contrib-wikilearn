@@ -20,7 +20,6 @@ Installing this will also install the following dependencies:
 Additionally, the following plugins will be installed:
 
 - `tutor-indigo-wikilearn@git+https://github.com/wikimedia/tutor-indigo-wikilearn@develop#egg=tutor-indigo-wikilearn`
-- `tutor-contrib-notifications@git+https://github.com/openedx/tutor-contrib-notifications.git@main#egg=tutor-contrib-notifications`
 
 **TODO: Note:** Installing in `[release]` mode will install all custom plugins from their latest release.
 
@@ -52,8 +51,7 @@ make clone-all
 
 This will:
 - Clone all Wikilearn-related repositories (including MFEs and edx-platform)
-- Install the frontend-related plugins (frontend-plugins-wikilearn, tutor-indigo-wikilearn) in editable mode
-- Mount the cloned repos automatically inside Tutor
+- Clone the frontend-related plugins (tutor-indigo-wikilearn) in editable mode
 
 You can also clone individual repos as needed:
 
@@ -63,6 +61,8 @@ make clone-messenger
 make clone-discussions
 make clone-features
 ```
+**Note:** You will need to mount and install your cloned repos for them to hot-reload correctly during development.
+
 ### 3. Setup Tutor
 Once all dependencies are cloned, configure Tutor and enable plugins:
 
