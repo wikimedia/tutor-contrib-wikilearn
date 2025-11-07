@@ -1,124 +1,223 @@
-name: Deploy
+name: Deploy to EKS Dev (Self-Hosted)
 
 on:
+  push:
+    branches:
+      - eemaan/refactor-plugin-setup
+      - dev
   workflow_dispatch:
+
+env:
+  WIKILEARN_BRANCH: eemaan/refactor-plugin-setup
+  INDIGO_WIKILEARN_BRANCH: develop
+  LMS_HOST: learnwiki-dev.edly.io
+  VENV: /home/ubuntu/venv
+  TUTOR: /home/ubuntu/venv/bin/tutor
+  PIP: /home/ubuntu/venv/bin/pip
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    env:
-      SSH: ssh -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=150 -i ~/.ssh/wikilearn_rsa ubuntu@192.168.197.58
-      WIKILEARN_BRANCH: eemaan/refactor-plugin-setup
-      INDIGO_WIKILEARN_BRANCH: develop
-      LMS_HOST: dev.learn.wiki
-      VENV: ~/venv
-      PIP: ~/venv/bin/pip
-      TUTOR: ~/venv/bin/tutor
+    runs-on: [self-hosted, WM-EKS-runner, wikilearn]
+    timeout-minutes: 90
+    
     steps:
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh/
-          echo "$SSH_KEY" > ~/.ssh/wikilearn_rsa
-          chmod 600 ~/.ssh/wikilearn_rsa
-        env:
-          SSH_KEY: ${{ secrets.WIKILEARN_SSH_KEY }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Create virtualenv
+      - name: Set up Python
         run: |
-          $SSH "#! /bin/bash -e
-          rm -rf $VENV
-          python3 -m venv $VENV
-          "
+          python3 --version
+          pip3 --version
 
-      - name: Upgrade python requirements
+      - name: Setup or update virtualenv
         run: |
-          $SSH "#! /bin/bash -e
-          $PIP install --upgrade pip setuptools
-          "
+          if [ ! -d "$VENV" ]; then
+            echo "Creating new virtualenv"
+            python3 -m venv $VENV
+          else
+            echo "Using existing virtualenv"
+          fi
+          $PIP install --upgrade pip setuptools wheel
 
-      - name: Install dependencies, tutor and plugins (from source)
+      - name: Install Tutor and plugins from source
         run: |
-          $SSH "#! /bin/bash -e
-          $PIP install --upgrade --editable "git+https://github.com/wikimedia/tutor-contrib-wikilearn.git@${WIKILEARN_BRANCH}#egg=tutor-contrib-wikilearn"
-          $PIP install --upgrade --editable "git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@${INDIGO_WIKILEARN_BRANCH}#egg=tutor-indigo-wikilearn"
-          "
+          $PIP install --upgrade --editable \
+            "git+https://github.com/wikimedia/tutor-contrib-wikilearn.git@${WIKILEARN_BRANCH}#egg=tutor-contrib-wikilearn"
+          $PIP install --upgrade --editable \
+            "git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@${INDIGO_WIKILEARN_BRANCH}#egg=tutor-indigo-wikilearn"
 
-      - name: Backup data
+      - name: Verify Tutor installation
         run: |
-          $SSH "#! /bin/bash -e
-            mkdir -p ~/apps/openedx/backup
-            if [ -d ~/.local/share/tutor/data/caddy ]
-            then
-              echo "Backing up caddy data"
-              sudo cp -r ~/.local/share/tutor/data/caddy ~/apps/openedx/backup/
-            else
-              echo "No caddy data to backup"
-            fi
-          "
+          $TUTOR --version
+          $TUTOR plugins list
 
-      - name: Clear existing platform
-        run: |
-          $SSH "#! /bin/bash -e
-            if [ -d ~/.local/share/tutor/env ]
-            then
-              echo "Stopping tutor containers"
-              $TUTOR local stop
-            else
-              echo "No running tutor container"
-            fi
-            sudo rm -rf ~/.local/share/tutor
-            docker container prune --force
-          "
+      # - name: Create backup directory
+      #   run: |
+      #     mkdir -p ~/apps/openedx/backup/$(date +%Y%m%d_%H%M%S)
+      #     echo "BACKUP_DIR=~/apps/openedx/backup/$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
 
-      - name: Restore some data
-        run: |
-          $SSH "#! /bin/bash -e
-            mkdir -p ~/.local/share/tutor/data/
-            if [ -d ~/apps/openedx/backup/caddy ]
-            then
-              echo "Restoring caddy backup data"
-              sudo cp -r ~/apps/openedx/backup/caddy ~/.local/share/tutor/data/
-            else
-              echo "No caddy backup data to restore"
-            fi
-          "
+      # - name: Backup critical data
+      #   run: |
+      #     set -e
+      #     if [ -d ~/.local/share/tutor/data/caddy ]; then
+      #       echo "Backing up Caddy data..."
+      #       sudo cp -r ~/.local/share/tutor/data/caddy $BACKUP_DIR/
+      #     fi
+          
+      #     if [ -d ~/.local/share/tutor/data/mysql ]; then
+      #       echo "Backing up MySQL data..."
+      #       sudo cp -r ~/.local/share/tutor/data/mysql $BACKUP_DIR/
+      #     fi
+          
+      #     if [ -d ~/.local/share/tutor/data/mongodb ]; then
+      #       echo "Backing up MongoDB data..."
+      #       sudo cp -r ~/.local/share/tutor/data/mongodb $BACKUP_DIR/
+      #     fi
+          
+      #     echo "Backup completed at $BACKUP_DIR"
 
-      - name: Enable plugins
+      - name: Stop Tutor services
         run: |
-          $SSH "#! /bin/bash -e
+          if [ -d ~/.local/share/tutor/env ]; then
+            echo "Stopping Tutor containers..."
+            $TUTOR local stop || echo "Failed to stop some containers, continuing..."
+          else
+            echo "No Tutor environment found"
+          fi
+
+      # - name: Clean up old environment
+      #   run: |
+      #     echo "Removing old Tutor environment..."
+      #     sudo rm -rf ~/.local/share/tutor/env
+          
+      #     echo "Pruning Docker resources..."
+      #     docker container prune --force
+      #     docker image prune --force
+      #     docker volume prune --force
+
+      # - name: Restore persistent data
+      #   run: |
+      #     mkdir -p ~/.local/share/tutor/data/
+          
+      #     if [ -d $BACKUP_DIR/caddy ]; then
+      #       echo "Restoring Caddy data..."
+      #       sudo cp -r $BACKUP_DIR/caddy ~/.local/share/tutor/data/
+      #     fi
+          
+      #     if [ -d $BACKUP_DIR/mysql ]; then
+      #       echo "Restoring MySQL data..."
+      #       sudo cp -r $BACKUP_DIR/mysql ~/.local/share/tutor/data/
+      #     fi
+          
+      #     if [ -d $BACKUP_DIR/mongodb ]; then
+      #       echo "Restoring MongoDB data..."
+      #       sudo cp -r $BACKUP_DIR/mongodb ~/.local/share/tutor/data/
+      #     fi
+
+      - name: Enable Wikilearn plugins
+        run: |
           $TUTOR plugins enable wikilearn
           $TUTOR wikilearn enable
-          "
+          $TUTOR plugins list
 
-      - name: Configure tutor settings
-        run: |
-          $SSH "#! /bin/bash -e
-            $TUTOR config save \
-              --set LMS_HOST=$LMS_HOST \
-              --set CMS_HOST=studio.$LMS_HOST \
-              --set ENABLE_HTTPS=true \
-              --set PLATFORM_NAME='Wikilearn Dev'
-          "
+      # - name: Configure Tutor settings
+      #   run: |
+      #     $TUTOR config save \
+      #       --set LMS_HOST=$LMS_HOST \
+      #       --set CMS_HOST=studio.$LMS_HOST \
+      #       --set ENABLE_HTTPS=true \
+      #       --set PLATFORM_NAME='Wikilearn Dev' \
+      #       --set ASPECTS_ENABLE_PII=true \
+      #       --set ASPECTS_ENABLE_STUDIO_IN_CONTEXT_METRICS=true
 
-      - name: Configure Aspects
+      - name: Display configuration
         run: |
-          $SSH "$TUTOR config save --set ASPECTS_ENABLE_PII=true --set ASPECTS_ENABLE_STUDIO_IN_CONTEXT_METRICS=true"
+          echo "=== Tutor Configuration ==="
+          $TUTOR config printroot
+          $TUTOR config printvalue LMS_HOST
+          $TUTOR config printvalue CMS_HOST
 
       - name: Build Docker images
         run: |
-          $SSH "#! /bin/bash -e
-            $TUTOR images build all
-          "
+          echo "Building Docker images..."
+          $TUTOR images build all
+        # timeout-minutes: 45
 
-      - name: Launch
-        run: $SSH "$TUTOR local launch --non-interactive"
-
-      - name: "Provision: Create users"
+      - name: Launch Tutor platform
         run: |
-          $SSH "#! /bin/bash -e
-            $TUTOR local do createuser --staff --superuser --password=admin admin admin@edly.io
-            $TUTOR local do createuser --password=student student student@edly.io
-          "
+          echo "Launching Tutor platform..."
+          $TUTOR local launch --skip-build --non-interactive
 
-      - name: "Provision: Import demo course"
-        run: $SSH "$TUTOR local do importdemocourse"
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to start..."
+          sleep 30
+          
+          # Check if containers are running
+          docker ps --filter "name=tutor" --format "table {{.Names}}\t{{.Status}}"
+
+      # - name: Create admin user
+      #   run: |
+      #     $TUTOR local do createuser \
+      #       --staff \
+      #       --superuser \
+      #       --password=admin \
+      #       admin \
+      #       admin@edly.io || echo "User may already exist"
+
+      # - name: Create student user
+      #   run: |
+      #     $TUTOR local do createuser \
+      #       --password=student \
+      #       student \
+      #       student@edly.io || echo "User may already exist"
+
+      # - name: Import demo course
+      #   run: |
+      #     $TUTOR local do importdemocourse
+
+      # - name: Health check
+      #   run: |
+      #     echo "=== Running health checks ==="
+          
+      #     # Check LMS
+      #     curl -f -k https://$LMS_HOST || echo "LMS health check failed"
+          
+      #     # Check CMS
+      #     curl -f -k https://studio.$LMS_HOST || echo "CMS health check failed"
+          
+      #     # Check running containers
+      #     echo "=== Running containers ==="
+      #     docker ps --filter "name=tutor"
+          
+      #     # Check logs for errors
+      #     echo "=== Recent logs ==="
+      #     $TUTOR local logs --tail=50
+
+      # - name: Cleanup old backups
+      #   run: |
+      #     # Keep only last 5 backups
+      #     cd ~/apps/openedx/backup
+      #     ls -t | tail -n +6 | xargs -r rm -rf
+      #     echo "Old backups cleaned up"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "==================================="
+          echo "Deployment Summary"
+          echo "==================================="
+          echo "Branch: $WIKILEARN_BRANCH"
+          echo "LMS URL: https://$LMS_HOST"
+          echo "CMS URL: https://studio.$LMS_HOST"
+          # echo "Admin credentials: admin/admin"
+          # echo "Student credentials: student/student"
+          echo "==================================="
+          echo "Tutor status:"
+          $TUTOR local status
+
+      # - name: Notify on failure
+      #   if: failure()
+      #   run: |
+      #     echo "::error::Deployment failed! Check logs above for details."
+      #     echo "Backup available at: $BACKUP_DIR"
