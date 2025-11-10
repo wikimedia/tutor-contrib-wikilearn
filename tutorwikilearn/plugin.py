@@ -83,6 +83,53 @@ PLUGIN_SLOTS.add_items([
 ])
 
 
+#######################################
+# CUSTOM CLI COMMANDS
+#######################################
+
+# Your plugin can also add custom commands directly to the Tutor CLI.
+# These commands are run directly on the user's host computer
+# (unlike jobs, which are run in containers).
+
+# To define a command group for your plugin, you would define a Click
+# group and then add it to CLI_COMMANDS:
+
+
+@click.group()
+def wikilearn() -> None:
+    """WikiLearn plugin commands."""
+    pass
+
+
+hooks.Filters.CLI_COMMANDS.add_item(wikilearn)
+
+
+@wikilearn.command()
+def enable() -> None:
+    """Enable all required plugins for WikiLearn."""
+    try:
+        click.echo("Enabling WikiLearn required plugins...")
+
+        result = subprocess.run(
+            "tutor plugins enable mfe indigo notes forum",
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        click.echo("✓ Successfully enabled all plugins")
+        if result.stdout:
+            click.echo(f"Output: {result.stdout}")
+
+    except subprocess.CalledProcessError as e:
+        click.echo(f"✗ Command failed: {e.stderr}", err=True)
+    except Exception as e:
+        click.echo(f"✗ Unexpected error: {str(e)}", err=True)
+
+    click.echo("\nAll plugins have been processed.")
+    click.echo("Run 'tutor plugins list' to verify the enabled plugins.")
+
 
 ########################################
 # TEMPLATE RENDERING

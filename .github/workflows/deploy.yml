@@ -62,7 +62,8 @@ jobs:
 
       - name: Enable Wikilearn plugins
         run: |
-          make setup
+          $TUTOR plugins enable wikilearn
+          $TUTOR wikilearn enable
           $TUTOR plugins list
 
       - name: Display configuration

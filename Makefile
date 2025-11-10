@@ -38,7 +38,7 @@ install: ## Install wikilearn plugin and dependencies in editable mode
 setup:
 	@echo "Enabling Tutor plugins..."
 	tutor plugins enable wikilearn
-	tutor plugins enable mfe indigo notes forum
+	tutor wikilearn enable
 
 clone-indigo:
 	@echo "Cloning tutor-indigo-wikilearn..."
