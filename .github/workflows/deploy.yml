@@ -19,7 +19,7 @@ jobs:
   deploy:
     runs-on: [self-hosted, WM-EKS-runner, wikilearn]
     timeout-minutes: 90
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
