@@ -3,12 +3,12 @@ name: Deploy to EKS Dev (Self-Hosted)
 on:
   push:
     branches:
-      - eemaan/refactor-plugin-setup
+      - master
       - dev
   workflow_dispatch:
 
 env:
-  WIKILEARN_BRANCH: eemaan/refactor-plugin-setup
+  WIKILEARN_BRANCH: master
   INDIGO_WIKILEARN_BRANCH: develop
   LMS_HOST: learnwiki-dev.edly.io
   VENV: /home/ubuntu/venv
