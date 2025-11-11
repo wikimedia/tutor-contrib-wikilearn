@@ -18,7 +18,6 @@ env:
 jobs:
   deploy:
     runs-on: [self-hosted, WM-EKS-runner, wikilearn]
-    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
@@ -76,7 +75,7 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Building Docker images..."
-          $TUTOR images build all --no-cache
+          $TUTOR images build all
         # timeout-minutes: 45
 
       - name: Launch Tutor platform
