@@ -76,7 +76,7 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Building Docker images..."
-          $TUTOR images build all --no-cache
+          $TUTOR images build all
         # timeout-minutes: 45
 
       - name: Launch Tutor platform
