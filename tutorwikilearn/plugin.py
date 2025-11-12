@@ -10,13 +10,7 @@ from tutormfe.hooks import MFE_APPS
 from tutormfe.hooks import PLUGIN_SLOTS
 
 from .__about__ import __version__
-from .constants import (
-    WIKILEARN_DISCUSSIONS_MFE_VERSION,
-    WIKILEARN_EDX_FEATURES_VERSION,
-    WIKILEARN_EDX_PLATFORM_VERSION,
-    WIKILEARN_FRONTEND_PLUGINS_VERSION,
-    WIKILEARN_MESSENGER_MFE_VERSION,
-)
+from .constants import *
 
 
 ########################################
@@ -181,6 +175,11 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
         "version": WIKILEARN_DISCUSSIONS_MFE_VERSION,
+    }
+    mfes["account"] = {
+        "repository": "https://github.com/edly-io/frontend-app-account.git",
+        "port": 1997,
+        "version": WIKILEARN_ACCOUNT_MFE_VERSION,
     }
     mfes.pop("authn")
     return mfes
