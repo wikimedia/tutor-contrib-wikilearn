@@ -46,35 +46,37 @@ hooks.Filters.ENV_PATCHES.add_items(
         (
             "mfe-dockerfile-post-npm-install-discussions",
             f"""
-RUN npm install git+https://github.com/wikimedia/frontend-plugins-wikilearn.git#{WIKILEARN_FRONTEND_PLUGINS_VERSION}
+RUN npm install frontend-plugins-wikilearn@{WIKILEARN_FRONTEND_PLUGINS_VERSION}
 """,
         ),
         (
             "mfe-env-config-runtime-definitions-discussions",
             """
-    const { UsernameMention } = require('frontend-plugins-wikilearn');
+const { UsernameMention } = await import('frontend-plugins-wikilearn');
 """,
         ),
     ]
 )
 
 
-PLUGIN_SLOTS.add_items([
-    (
-        "discussions",
-        "org.openedx.frontend.discussions.user_mention_plugin.v1",
-        """
+PLUGIN_SLOTS.add_items(
+    [
+        (
+            "discussions",
+            "user_mention_plugin",
+            """
         {
           op: PLUGIN_OPERATIONS.Insert,
           widget: {
             id: 'user_mention_plugin',
             type: DIRECT_PLUGIN,
-            priority: 10,
+            priority: 60,
             RenderWidget: UsernameMention,
           },
-        }"""
-    )
-])
+        }""",
+        )
+    ]
+)
 
 
 #######################################
@@ -166,11 +168,11 @@ for path in glob(str(importlib_resources.files("tutorwikilearn") / "patches" / "
 
 @MFE_APPS.add()
 def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
-    mfes["messenger"] = {
-        "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
-        "port": 2010,
-        "version": WIKILEARN_MESSENGER_MFE_VERSION,
-    }
+    # mfes["messenger"] = {
+    #     "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
+    #     "port": 2010,
+    #     "version": WIKILEARN_MESSENGER_MFE_VERSION,
+    # }
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
