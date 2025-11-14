@@ -168,11 +168,11 @@ for path in glob(str(importlib_resources.files("tutorwikilearn") / "patches" / "
 
 @MFE_APPS.add()
 def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
-    # mfes["messenger"] = {
-    #     "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
-    #     "port": 2010,
-    #     "version": WIKILEARN_MESSENGER_MFE_VERSION,
-    # }
+    mfes["messenger"] = {
+        "repository": "https://github.com/wikimedia/frontend-app-messenger.git",
+        "port": 2010,
+        "version": WIKILEARN_MESSENGER_MFE_VERSION,
+    }
     mfes["discussions"] = {
         "repository": "https://github.com/edly-io/frontend-app-discussions.git",
         "port": 2002,
