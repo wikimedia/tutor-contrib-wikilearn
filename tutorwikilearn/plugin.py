@@ -24,6 +24,7 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Prefix your setting names with 'WIKILEARN_'.
         ("WIKILEARN_VERSION", __version__),
         ("WIKILEARN_EDX_FEATURES_VERSION", WIKILEARN_EDX_FEATURES_VERSION),
+        ("EMAIL_ADMIN",'email_admin'),
     ]
 )
 
