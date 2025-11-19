@@ -1,4 +1,4 @@
 AUTHENTICATION_BACKENDS += ["openedx_wikilearn_features.auth_backend.WikimediaIdentityServer"]
 FEATURES['ENABLE_UNICODE_USERNAME'] = True
 NOTIFICATIONS_DEFAULT_FROM_EMAIL = "{{ CONTACT_EMAIL }}"
-EMAIL_ADMIN = 'email_admin'
+EMAIL_ADMIN = "{{ EMAIL_ADMIN }}"
