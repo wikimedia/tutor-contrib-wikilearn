@@ -2,3 +2,21 @@ AUTHENTICATION_BACKENDS += ["openedx_wikilearn_features.auth_backend.WikimediaId
 FEATURES['ENABLE_UNICODE_USERNAME'] = True
 NOTIFICATIONS_DEFAULT_FROM_EMAIL = "{{ CONTACT_EMAIL }}"
 EMAIL_ADMIN = "{{ EMAIL_ADMIN }}"
+COURSE_DISCOVERY_FILTERS = ["language", "pace_type", "topic"]
+
+COURSE_DISCOVERY_MEANINGS = {
+    'language': {
+        'name': 'Language',
+        'terms': dict(ALL_LANGUAGES),
+    },
+    'pace_type': {
+        'name': 'Course Pace',
+        'terms': {
+            'instructor_led': 'Instructor Led',
+            'self_paced': 'Self Paced'
+        }
+    },
+    'topic': {
+        'name': 'Topic',
+    }
+}
