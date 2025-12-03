@@ -2,3 +2,4 @@ tutor>=20.0.0,<21.0.0
 tutor-mfe>=20.0.0,<21.0.0
 tutor-forum>=20.0.0,<21.0.0
 tutor-notes>=20.0.0,<21.0.0
+tutor-credentials>=20.0.0,<21.0.0
