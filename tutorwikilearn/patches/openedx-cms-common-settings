@@ -1,5 +1,6 @@
 # Enabling features
-# FEATURES['ENABLE_COURSE_DISCOVERY'] = True
+FEATURES['ENABLE_COURSE_DISCOVERY'] = True
+FEATURES['ENABLE_OTHER_COURSE_SETTINGS'] = True
 
 # Multilingual Feature Dev Configurations
 WIKI_META_API_USERNAME = "Edly-user"
