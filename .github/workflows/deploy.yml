@@ -61,8 +61,7 @@ jobs:
 
       - name: Enable Wikilearn plugins
         run: |
-          $TUTOR plugins enable wikilearn
-          $TUTOR wikilearn enable
+          $TUTOR plugins enable wikilearn mfe indigo notes forum credentials discovery
           $TUTOR plugins list
 
       - name: Display configuration
