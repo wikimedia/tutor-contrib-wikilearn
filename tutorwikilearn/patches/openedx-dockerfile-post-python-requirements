@@ -1,4 +1,6 @@
 RUN pip install --upgrade git+https://github.com/wikimedia/openedx-wikilearn-features.git@{{ WIKILEARN_EDX_FEATURES_VERSION }}#egg=openedx-wikilearn-features
 
+RUN pip install --upgrade git+https://github.com/edly-io/openedx-badges.git@master#egg=openedx-badges
+
 RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
     pip install git+https://github.com/edly-io/xblock-sortable.git@v0.1#egg=sortable-xblock
