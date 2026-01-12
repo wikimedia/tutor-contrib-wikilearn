@@ -186,12 +186,12 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
     }
     mfes["learning"] = {
         "repository": "https://github.com/wikimedia/edx-frontend-app-learning.git",
-        "port": 1997,
+        "port": 2000,
         "version": WIKILEARN_LEARNING_MFE_VERSION,
     }
     mfes["authoring"] = {
         "repository": "https://github.com/edly-io/frontend-app-authoring.git",
-        "port": 1997,
+        "port": 2001,
         "version": WIKILEARN_AUTHORING_MFE_VERSION,
     }
     mfes.pop("authn")
