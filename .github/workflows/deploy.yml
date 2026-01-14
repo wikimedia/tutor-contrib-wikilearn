@@ -6,10 +6,21 @@ on:
       - master
       - dev
   workflow_dispatch:
+    inputs:
+      wikilearn_branch:
+        description: 'Wikilearn branch to deploy'
+        required: false
+        default: 'master'
+        type: string
+      indigo_wikilearn_branch:
+        description: 'Indigo Wikilearn branch to deploy'
+        required: false
+        default: 'develop'
+        type: string
 
 env:
-  WIKILEARN_BRANCH: master
-  INDIGO_WIKILEARN_BRANCH: develop
+  WIKILEARN_BRANCH: ${{ inputs.wikilearn_branch || 'master' }}
+  INDIGO_WIKILEARN_BRANCH: ${{ inputs.indigo_wikilearn_branch || 'develop' }}
   LMS_HOST: learnwiki-dev.edly.io
   VENV: /home/ubuntu/venv
   TUTOR: /home/ubuntu/venv/bin/tutor
