@@ -49,7 +49,7 @@ jobs:
           fi
           $PIP install --upgrade pip setuptools wheel
 
-      - name: Install Tutor and plugins from source
+      - name: Install Wikilearn plugin and theme
         run: |
           $PIP install --upgrade --editable \
             "git+https://github.com/wikimedia/tutor-contrib-wikilearn.git@${WIKILEARN_BRANCH}#egg=tutor-contrib-wikilearn"
@@ -86,7 +86,7 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Building Docker images..."
-          $TUTOR images build all
+          $TUTOR images build all --no-cache
         # timeout-minutes: 45
 
       - name: Launch Tutor platform
