@@ -6,10 +6,21 @@ on:
       - master
       - dev
   workflow_dispatch:
+    inputs:
+      wikilearn_branch:
+        description: 'Wikilearn branch to deploy'
+        required: false
+        default: 'master'
+        type: string
+      indigo_wikilearn_branch:
+        description: 'Indigo Wikilearn branch to deploy'
+        required: false
+        default: 'develop'
+        type: string
 
 env:
-  WIKILEARN_BRANCH: master
-  INDIGO_WIKILEARN_BRANCH: develop
+  WIKILEARN_BRANCH: ${{ inputs.wikilearn_branch || 'master' }}
+  INDIGO_WIKILEARN_BRANCH: ${{ inputs.indigo_wikilearn_branch || 'develop' }}
   LMS_HOST: learnwiki-dev.edly.io
   VENV: /home/ubuntu/venv
   TUTOR: /home/ubuntu/venv/bin/tutor
@@ -38,7 +49,7 @@ jobs:
           fi
           $PIP install --upgrade pip setuptools wheel
 
-      - name: Install Tutor and plugins from source
+      - name: Install Wikilearn plugin and theme
         run: |
           $PIP install --upgrade --editable \
             "git+https://github.com/wikimedia/tutor-contrib-wikilearn.git@${WIKILEARN_BRANCH}#egg=tutor-contrib-wikilearn"
@@ -75,7 +86,7 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Building Docker images..."
-          $TUTOR images build all
+          $TUTOR images build all --no-cache
         # timeout-minutes: 45
 
       - name: Launch Tutor platform
