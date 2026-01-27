@@ -20,3 +20,7 @@ COURSE_DISCOVERY_MEANINGS = {
         'name': 'Topic',
     }
 }
+
+# Verifiable credentials config
+MFE_CONFIG["ENABLE_VERIFIABLE_CREDENTIALS"] = True
+FEATURES['ENABLE_LEARNER_RECORDS'] = True

@@ -55,6 +55,8 @@ jobs:
             "git+https://github.com/wikimedia/tutor-contrib-wikilearn.git@${WIKILEARN_BRANCH}#egg=tutor-contrib-wikilearn"
           $PIP install --upgrade --editable \
             "git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@${INDIGO_WIKILEARN_BRANCH}#egg=tutor-indigo-wikilearn"
+          $PIP install --upgrade --editable \
+            "git+https://github.com/raccoongang/tutor-contrib-badges@teak#egg=tutor-contrib-badges"
 
       - name: Verify Tutor installation
         run: |
@@ -72,9 +74,8 @@ jobs:
 
       - name: Enable Wikilearn plugins
         run: |
-          $TUTOR plugins enable wikilearn
-          $TUTOR wikilearn enable
-          $TUTOR plugins list
+          $TUTOR plugins enable badges credentials discovery forum indigo mfe notes wikilearn
+
 
       - name: Display configuration
         run: |
