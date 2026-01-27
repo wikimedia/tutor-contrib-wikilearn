@@ -35,6 +35,9 @@ install: ## Install wikilearn plugin and dependencies in editable mode
 	@echo "Installing tutor-indigo-wikilearn from branch '${WIKILEARN_INDIGO_BRANCH_VERSION}'..."
 	pip install --upgrade --editable "git+https://github.com/wikimedia/tutor-indigo-wikilearn.git@${WIKILEARN_INDIGO_BRANCH_VERSION}#egg=tutor-indigo-wikilearn"
 
+	@echo "Installing tutor-contrib-badges from branch 'teak'..."
+	pip install --upgrade --editable "git+https://github.com/raccoongang/tutor-contrib-badges@teak#egg=tutor-contrib-badges"
+
 setup:
 	@echo "Enabling Tutor plugins..."
 	tutor plugins enable wikilearn
