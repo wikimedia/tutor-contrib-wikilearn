@@ -194,5 +194,10 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
         "port": 2001,
         "version": WIKILEARN_AUTHORING_MFE_VERSION,
     }
+    mfes["gradebook"] = {
+        "repository": "https://github.com/edly-io/frontend-app-gradebook.git",
+        "port": 1994,
+        "version": WIKILEARN_GRADEBOOK_MFE_VERSION,
+    }
     mfes.pop("authn")
     return mfes
