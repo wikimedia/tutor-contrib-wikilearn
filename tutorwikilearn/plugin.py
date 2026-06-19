@@ -80,6 +80,40 @@ PLUGIN_SLOTS.add_items(
 )
 
 
+########################################
+# INIT TASKS
+########################################
+
+# WikiLearn sets COURSE_DISCOVERY_FILTERS = ["language", "pace_type", "topic"]
+# (see patches/openedx-lms-common-settings), but edx-search hardcodes the
+# `course_info` Meilisearch index filterable attributes and does NOT include
+# `pace_type`/`topic`. Without this, the catalog page fails with:
+#   MeilisearchApiError: attributes `pace_type, topic` are not filterable
+# This init task adds them on every `tutor ... do init`. It is idempotent:
+# update_index_filterables() unions (never removes), and get_or_create makes
+# it safe whether or not the index already exists.
+hooks.Filters.CLI_DO_INIT_TASKS.add_item(
+    (
+        "lms",
+        """
+echo "WikiLearn: ensuring course_info filterable attributes (pace_type, topic)..."
+./manage.py lms shell -c "
+from search.meilisearch import (
+    get_meilisearch_client,
+    get_meilisearch_index_name,
+    get_or_create_meilisearch_index,
+    update_index_filterables,
+)
+client = get_meilisearch_client()
+index = get_or_create_meilisearch_index(client, get_meilisearch_index_name('course_info'))
+update_index_filterables(client, index, ['pace_type', 'topic'])
+print('WikiLearn: course_info filterable attributes ensured.')
+"
+""",
+    )
+)
+
+
 #######################################
 # CUSTOM CLI COMMANDS
 #######################################
