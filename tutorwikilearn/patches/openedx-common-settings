@@ -15,3 +15,5 @@ USERNAME_REGEX_PARTIAL = r'[^#<>[\]|{}/\\@:]+'
 USERNAME_PATTERN = fr'(?P<username>{USERNAME_REGEX_PARTIAL})'
 
 ALLOW_COURSE_STAFF_GRADE_DOWNLOADS = True
+
+DATABASES["default"].setdefault("OPTIONS", {})["charset"] = "utf8mb4"
