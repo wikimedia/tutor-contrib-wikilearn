@@ -33,8 +33,11 @@ hooks.Filters.CONFIG_OVERRIDES.add_items(
         # Override any default setting values here.
         ("EDX_PLATFORM_REPOSITORY", "https://github.com/wikimedia/edx-platform.git"),
         ("EDX_PLATFORM_VERSION", WIKILEARN_EDX_PLATFORM_VERSION),
-        ("DEV_PROJECT_NAME", "wikilearn-dev")
-
+        ("DEV_PROJECT_NAME", "wikilearn-dev"),
+        # Pull translations from the Wikimedia fork (upstream + custom overrides,
+        # e.g. the ar_MA / Moroccan Arabic locale) instead of openedx/openedx-translations.
+        ("ATLAS_REPOSITORY", "wikimedia/openedx-translations"),
+        ("ATLAS_REVISION", "release/teak"),
     ]
 )
 

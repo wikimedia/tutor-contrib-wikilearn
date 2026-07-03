@@ -10,6 +10,16 @@ COURSE_CATALOG_VISIBILITY_PERMISSION = "see_exists"
 COURSE_ABOUT_VISIBILITY_PERMISSION = "see_exists"
 PARENTAL_CONSENT_AGE_LIMIT = None
 
+# Enable Moroccan Arabic (ar-ma) in the language selector.
+# released_languages() only surfaces dark-lang codes that are also members of
+# settings.LANGUAGES, and upstream ships only 'ar'. Translations are pulled from
+# the ar_MA locale in wikimedia/openedx-translations (see ATLAS_* overrides).
+if ('ar-ma', 'العربية (المغرب)') not in LANGUAGES:
+    LANGUAGES.append(('ar-ma', 'العربية (المغرب)'))
+    LANGUAGE_DICT = dict(LANGUAGES)
+if 'ar-ma' not in LANGUAGES_BIDI:
+    LANGUAGES_BIDI = tuple(LANGUAGES_BIDI) + ('ar-ma',)
+
 # Only allow alphanumeric characters, underscores, and hyphens
 USERNAME_REGEX_PARTIAL = r'[^#<>[\]|{}/\\@:]+'
 USERNAME_PATTERN = fr'(?P<username>{USERNAME_REGEX_PARTIAL})'
