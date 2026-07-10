@@ -25,6 +25,9 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         ("WIKILEARN_VERSION", __version__),
         ("WIKILEARN_EDX_FEATURES_VERSION", WIKILEARN_EDX_FEATURES_VERSION),
         ("EMAIL_ADMIN", 'email_admin'),
+        # Wiki Meta translation bot password. Default is the dev/test-wiki
+        # credential; override in the environment's config.yml on prod.
+        ("WIKILEARN_WIKI_META_API_PASSWORD", "3dlyW!k!L3@rn#2020"),
     ]
 )
 

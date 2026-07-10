@@ -1,0 +1,9 @@
+# Wiki Meta translations — dev/local values (test wiki server).
+# Password comes from config.yml (WIKILEARN_WIKI_META_API_PASSWORD).
+WIKI_META_BASE_URL = "https://lpl-mleb-master.wmcloud.org/index.php"
+WIKI_META_BASE_API_URL = "https://lpl-mleb-master.wmcloud.org/api.php"
+WIKI_META_CONTENT_MODEL = "translate-messagebundle"
+WIKI_META_MCGROUP_PREFIX = "messagebundle"
+WIKI_META_COURSE_PREFIX = ""
+WIKI_META_API_USERNAME = "Edly-user"
+WIKI_META_API_PASSWORD = "{{ WIKILEARN_WIKI_META_API_PASSWORD }}"
