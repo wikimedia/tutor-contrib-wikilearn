@@ -2,9 +2,9 @@
 FEATURES['ENABLE_COURSE_DISCOVERY'] = True
 FEATURES['ENABLE_OTHER_COURSE_SETTINGS'] = True
 
-# Multilingual Feature Dev Configurations
-WIKI_META_API_USERNAME = "Edly-user"
-WIKI_META_API_PASSWORD = "3dlyW!k!L3@rn#2020"
+# NOTE: Wiki Meta translation settings (WIKI_META_*) are set per-environment in
+# openedx-cms-development-settings / openedx-cms-production-settings; the password
+# is templated from config.yml (WIKILEARN_WIKI_META_API_PASSWORD).
 
 # Additional Xblocks
 ADVANCED_PROBLEM_TYPES = [
