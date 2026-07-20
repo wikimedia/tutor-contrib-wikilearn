@@ -1,0 +1,140 @@
+{% if WIKILEARN_CREDENTIALS_SYNC_ENABLED %}
+---
+# WikiLearn: scheduled Credentials sync (LMS -> Discovery -> Credentials) + cert backfill.
+#
+# This is the k8s-native scheduler for the same work as `tutor k8s do sync-credentials`
+# (defined in the plugin's CLI_DO_COMMANDS). Kubernetes has no host crontab, so on
+# staging/prod (both tutor k8s) the schedule lives here as a CronJob.
+#
+# The four steps are ORDER-DEPENDENT, so the catalog stages run as initContainers
+# (Kubernetes runs initContainers sequentially and each must exit 0 before the next
+# starts); the certificate backfill runs as the main container, last. Every step is
+# idempotent, so a retried run is safe.
+#   1. Discovery pulls courses/course-runs from the LMS.
+#   2. LMS refreshes its program cache from Discovery.
+#   3. Credentials pulls the catalog from Discovery. Issuance is REJECTED for a course
+#      run that is not yet in the Credentials catalog ("CourseRun doesn't exist in the
+#      catalog"), so this must precede any award/backfill.
+#   4. LMS re-sends recent certificate changes as a safety net for anything the live
+#      signal / event-bus issuance path dropped.
+#
+# Images, settings mounts and configmap names mirror tutor's own k8s deployments.yml /
+# jobs.yml and the discovery/credentials plugins, so this stays correct across upgrades.
+# Only `tutor k8s` applies this manifest; local/dev (docker-compose) ignore it.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: credentials-sync
+  labels:
+    app.kubernetes.io/name: credentials-sync
+    app.kubernetes.io/component: cronjob
+spec:
+  schedule: "{{ WIKILEARN_CREDENTIALS_SYNC_SCHEDULE }}"
+  # Skip this tick if the previous sync is still running; never overlap runs.
+  concurrencyPolicy: Forbid
+  # If a tick is missed (e.g. control plane down), still start within the hour.
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      # One retry covers a transient blip; a fully failed run self-heals on the next
+      # scheduled run because the backfill window (LOOKBACK_DAYS) is wider than the interval.
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: credentials-sync
+        spec:
+          restartPolicy: Never
+          initContainers:
+            # 1. Discovery pulls courses/course-runs from the LMS.
+            - name: refresh-course-metadata
+              image: {{ DISCOVERY_DOCKER_IMAGE }}
+              command:
+                - ./manage.py
+                - refresh_course_metadata
+                - "--partner_code={{ WIKILEARN_CREDENTIALS_SYNC_PARTNER_CODE }}"
+              env:
+                - name: DJANGO_SETTINGS_MODULE
+                  value: course_discovery.settings.tutor.production
+              volumeMounts:
+                - mountPath: /openedx/discovery/course_discovery/settings/tutor/production.py
+                  name: discovery-settings
+                  subPath: production.py
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                allowPrivilegeEscalation: false
+            # 2. LMS refreshes its program cache from Discovery.
+            - name: cache-programs
+              image: {{ DOCKER_IMAGE_OPENEDX }}
+              command: ["./manage.py", "lms", "cache_programs"]
+              env:
+                - name: SERVICE_VARIANT
+                  value: lms
+                - name: DJANGO_SETTINGS_MODULE
+                  value: lms.envs.tutor.production
+              volumeMounts:
+                - mountPath: /openedx/edx-platform/lms/envs/tutor/
+                  name: settings-lms
+                - mountPath: /openedx/edx-platform/cms/envs/tutor/
+                  name: settings-cms
+                - mountPath: /openedx/config
+                  name: config
+            # 3. Credentials pulls the catalog from Discovery (must precede issuance).
+            - name: copy-catalog
+              image: {{ CREDENTIALS_DOCKER_IMAGE }}
+              command: ["./manage.py", "copy_catalog"]
+              env:
+                - name: DJANGO_SETTINGS_MODULE
+                  value: credentials.settings.tutor.production
+              volumeMounts:
+                - mountPath: /openedx/credentials/credentials/settings/tutor/production.py
+                  name: credentials-settings
+                  subPath: production.py
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                allowPrivilegeEscalation: false
+          containers:
+            # 4. LMS re-sends certificate changes from the last N days (safety net).
+            #    On k8s Celery is not eager, so this enqueues handle_notify_credentials
+            #    to the lms-worker; the container exits once the task is queued.
+            - name: notify-credentials
+              image: {{ DOCKER_IMAGE_OPENEDX }}
+              command:
+                - sh
+                - -c
+                - >-
+                  ./manage.py lms notify_credentials
+                  --start-date "$(date -u -d '{{ WIKILEARN_CREDENTIALS_SYNC_LOOKBACK_DAYS }} days ago' +%Y-%m-%d)"
+              env:
+                - name: SERVICE_VARIANT
+                  value: lms
+                - name: DJANGO_SETTINGS_MODULE
+                  value: lms.envs.tutor.production
+              volumeMounts:
+                - mountPath: /openedx/edx-platform/lms/envs/tutor/
+                  name: settings-lms
+                - mountPath: /openedx/edx-platform/cms/envs/tutor/
+                  name: settings-cms
+                - mountPath: /openedx/config
+                  name: config
+          volumes:
+            - name: settings-lms
+              configMap:
+                name: openedx-settings-lms
+            - name: settings-cms
+              configMap:
+                name: openedx-settings-cms
+            - name: config
+              configMap:
+                name: openedx-config
+            - name: discovery-settings
+              configMap:
+                name: discovery-settings
+            - name: credentials-settings
+              configMap:
+                name: credentials-settings
+{% endif %}
