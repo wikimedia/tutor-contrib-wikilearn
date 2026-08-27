@@ -28,6 +28,25 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Wiki Meta translation bot password. Default is the dev/test-wiki
         # credential; override in the environment's config.yml on prod.
         ("WIKILEARN_WIKI_META_API_PASSWORD", "3dlyW!k!L3@rn#2020"),
+        # --- Credentials / verifiable-credentials sync (see the `sync-credentials`
+        # do-command below) ---
+        # Discovery partner code, passed to `refresh_course_metadata`. It is
+        # environment-specific: "openedx" for `tutor local`/prod, "dev" for
+        # `tutor dev`. The default matches prod; override it in the dev config.yml
+        # (WIKILEARN_CREDENTIALS_SYNC_PARTNER_CODE: dev) when testing there.
+        ("WIKILEARN_CREDENTIALS_SYNC_PARTNER_CODE", "openedx"),
+        # How many days back the certificate backfill (`notify_credentials`)
+        # re-sends. Keep this >= the cron interval so that a single missed/failed
+        # run self-heals on the next one (a daily cron with a 2-day window overlaps).
+        ("WIKILEARN_CREDENTIALS_SYNC_LOOKBACK_DAYS", 2),
+        # Whether to render the k8s CronJob that runs `sync-credentials` on a
+        # schedule (see patches/k8s-deployments). Only has any effect under
+        # `tutor k8s` (staging/prod); ignored by local/dev docker-compose. Set to
+        # false to disable the scheduled sync for an environment.
+        ("WIKILEARN_CREDENTIALS_SYNC_ENABLED", True),
+        # Cron schedule (UTC) for the k8s Credentials-sync CronJob. Default: daily
+        # at 02:00. Must stay narrower than LOOKBACK_DAYS so runs overlap.
+        ("WIKILEARN_CREDENTIALS_SYNC_SCHEDULE", "0 2 * * *"),
     ]
 )
 
@@ -118,6 +137,74 @@ print('WikiLearn: course_info filterable attributes ensured.')
 """,
     )
 )
+
+# Verifiable-credential issuance is gated behind a CredentialsApiConfig row in the
+# LMS (openedx.core.djangoapps.credentials). Without it, every certificate ->
+# Credentials signal handler (award_course_certificate, etc.) and the event-bus
+# consumers silently no-op, so no credential is ever created. This is a core LMS
+# model, so the task is safe even when the `credentials` plugin is disabled; it only
+# has an effect once the Credentials service is running. Idempotent: it only creates
+# the row when issuance is not already enabled, so it is safe on every `... do init`.
+hooks.Filters.CLI_DO_INIT_TASKS.add_item(
+    (
+        "lms",
+        """
+echo "WikiLearn: enabling Credentials issuance (CredentialsApiConfig)..."
+./manage.py lms shell -c "
+from openedx.core.djangoapps.credentials.models import CredentialsApiConfig
+config = CredentialsApiConfig.current()
+if not (config.enabled and config.enable_learner_issuance):
+    CredentialsApiConfig.objects.create(enabled=True, enable_learner_issuance=True)
+print('WikiLearn: CredentialsApiConfig.is_learner_issuance_enabled =', CredentialsApiConfig.current().is_learner_issuance_enabled)
+"
+""",
+    )
+)
+
+
+#######################################
+# CUSTOM "do" JOBS (run inside containers)
+#######################################
+
+# `tutor <local|dev|k8s> do sync-credentials`
+#
+# Syncs the course catalog LMS -> Discovery -> Credentials, then backfills any
+# certificate credentials the real-time signal / event-bus path may have missed.
+# This is the single unit the nightly cron runs on staging/prod (see README).
+#
+# Steps run in order because each feeds the next:
+#   1. Discovery pulls courses/course-runs from the LMS.
+#   2. LMS refreshes its program cache from Discovery.
+#   3. Credentials pulls the catalog from Discovery. Issuance FAILS for a course
+#      run that is not in the Credentials catalog ("CourseRun doesn't exist in the
+#      catalog"), so this must run before / alongside issuance.
+#   4. LMS re-sends certificate changes from the last N days as a safety net for
+#      anything the live signal / event-bus path dropped.
+#
+# Tutor renders each returned command string as a Jinja template (with the full
+# config) before running it, so the config values below are substituted at run time.
+@click.command(
+    name="sync-credentials",
+    help="Sync catalog (LMS->Discovery->Credentials) and backfill certificate credentials.",
+)
+def sync_credentials():
+    return [
+        (
+            "discovery",
+            "./manage.py refresh_course_metadata"
+            " --partner_code={{ WIKILEARN_CREDENTIALS_SYNC_PARTNER_CODE }}",
+        ),
+        ("lms", "./manage.py lms cache_programs"),
+        ("credentials", "./manage.py copy_catalog"),
+        (
+            "lms",
+            "./manage.py lms notify_credentials --start-date"
+            " \"$(date -u -d '{{ WIKILEARN_CREDENTIALS_SYNC_LOOKBACK_DAYS }} days ago' +%Y-%m-%d)\"",
+        ),
+    ]
+
+
+hooks.Filters.CLI_DO_COMMANDS.add_item(sync_credentials)
 
 
 #######################################
