@@ -240,4 +240,5 @@ def _add_my_mfe(mfes):  # type: ignore[no-untyped-def]
         "version": WIKILEARN_GRADEBOOK_MFE_VERSION,
     }
     mfes.pop("authn")
+    mfes.pop("admin-console", None)
     return mfes
