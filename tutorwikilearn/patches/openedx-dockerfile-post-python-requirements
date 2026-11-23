@@ -7,4 +7,4 @@ RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
     pip install git+https://github.com/openedx/xblock-image-explorer.git@v3.0.2#egg=xblock-image-explorer
 
 RUN --mount=type=cache,target=/openedx/.cache/pip,sharing=shared \
-    pip install git+https://github.com/edx/gamesxblock.git@1.0.19#egg=gamesxblock
+    pip install git+https://github.com/edx/gamesxblock.git@1.0.19#egg=edx-games
